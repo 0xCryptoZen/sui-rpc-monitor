@@ -44,7 +44,7 @@ source ~/.bashrc
 # Install dependencies
 bun install
 
-# Build the application
+# Build the application (REQUIRED before starting)
 bun run build
 ```
 
