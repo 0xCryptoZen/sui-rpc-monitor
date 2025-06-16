@@ -5,13 +5,12 @@
   "scripts": {
     "dev": "bun run next dev",
     "build": "bun run next build",
-    "start": "bun run next start",
+    "start": "bun run next start -p ${PORT:-3000}",
     "lint": "bun run next lint",
     "typecheck": "bun run tsc --noEmit"
   },
   "dependencies": {
     "@mysten/sui.js": "^0.54.1",
-    "axios": "^1.6.5",
     "chart.js": "^4.4.1",
     "next": "14.1.0",
     "react": "^18.2.0",

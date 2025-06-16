@@ -1,20 +1,12 @@
-import axios, { AxiosInstance } from 'axios';
 import { HealthCheckResult, NodeMetrics, NodeHistoryEntry } from '@/app/types';
 import { getMonitoringConfig, validateMonitoringConfig } from './config';
 
 export class SuiRPCClient {
-  private axiosInstance: AxiosInstance;
   private history: Map<string, NodeHistoryEntry[]> = new Map();
   private readonly config;
 
   constructor() {
     this.config = validateMonitoringConfig(getMonitoringConfig());
-    this.axiosInstance = axios.create({
-      timeout: this.config.requestTimeout,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
   }
 
   async testNode(nodeId: string, url: string): Promise<NodeMetrics> {
@@ -72,31 +64,48 @@ export class SuiRPCClient {
 
     for (const method of methods) {
       try {
-        const response = await this.axiosInstance.post(url, {
-          jsonrpc: '2.0',
-          id: 1,
-          method,
-          params: [],
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.config.requestTimeout);
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method,
+            params: [],
+          }),
+          signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
         const responseTime = Date.now() - startTime;
 
-        if (response.data.error) {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
           // If method not found, try next method
-          if (response.data.error.code === -32601) {
+          if (data.error.code === -32601) {
             continue;
           }
           return {
             success: false,
             responseTime,
-            error: response.data.error.message,
+            error: data.error.message,
           };
         }
 
         return {
           success: true,
           responseTime,
-          data: response.data.result,
+          data: data.result,
         };
       } catch (error) {
         // If it's the last method, return the error
@@ -126,12 +135,24 @@ export class SuiRPCClient {
     for (let i = 0; i < iterations; i++) {
       const start = Date.now();
       try {
-        await this.axiosInstance.post(url, {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'sui_getRpcApiVersion',
-          params: [],
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.config.requestTimeout);
+
+        await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'sui_getRpcApiVersion',
+            params: [],
+          }),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
         totalTime += Date.now() - start;
       } catch {
         // If request fails, use a high latency value
