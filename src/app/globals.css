@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  /* Custom color palette */
+  /* Sui brand colors */
   --color-sui-blue: #4DA2FF;
   --color-sui-teal: #6FBCF0;
   --color-sui-dark: #0F1419;
   --color-sui-light: #F7F9FB;
   
+  /* Status colors */
   --color-status-healthy: #10B981;
   --color-status-warning: #F59E0B;
   --color-status-error: #EF4444;

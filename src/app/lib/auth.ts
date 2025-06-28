@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose';
 import { query, queryOne } from './database';
 
 export interface User {
@@ -23,15 +21,21 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
+    const crypto = await import('crypto');
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    return `${salt}:${hash}`;
   }
 
   static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
+    const crypto = await import('crypto');
+    const [salt, hash] = hashedPassword.split(':');
+    const hashToCompare = crypto.scryptSync(password, salt, 64).toString('hex');
+    return hash === hashToCompare;
   }
 
   static async generateToken(user: User): Promise<string> {
+    const { SignJWT } = await import('jose');
     const jwt = await new SignJWT({ 
       userId: user.id, 
       username: user.username 
@@ -46,6 +50,7 @@ export class AuthService {
 
   static async verifyToken(token: string): Promise<{ userId: number; username: string } | null> {
     try {
+      const { jwtVerify } = await import('jose');
       const { payload } = await jwtVerify(token, JWT_SECRET);
       return {
         userId: payload.userId as number,

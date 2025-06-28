@@ -42,9 +42,9 @@ CREATE INDEX IF NOT EXISTS idx_node_metrics_timestamp ON node_metrics(timestamp)
 CREATE INDEX IF NOT EXISTS idx_sui_nodes_active ON sui_nodes(is_active);
 
 -- Insert default admin user (password: admin123)
--- Password hash generated with bcrypt rounds=10
+-- Password hash generated with Node.js crypto scrypt
 INSERT INTO users (username, password_hash) 
-VALUES ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi')
+VALUES ('admin', 'f15ea28264ad9c84fea765f8820bee59:f3c5e71502afb8910340c9f327b7c1b715275dda86719a8ccc196349c86ea79d58738cff3de5c6c5f8cee0ec9c06f93d9c4039215b9d73ffbdd1b2d9c1e08a62')
 ON CONFLICT (username) DO NOTHING;
 
 -- Insert default nodes from the original configuration

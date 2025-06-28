@@ -1,10 +1,11 @@
-import { Pool, PoolClient } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 
 // Database connection pool
 let pool: Pool | null = null;
 
-export function getPool(): Pool {
+export async function getPool(): Promise<Pool> {
   if (!pool) {
+    const { Pool } = await import('pg');
     pool = new Pool({
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
@@ -20,7 +21,7 @@ export function getPool(): Pool {
 }
 
 export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
-  const pool = getPool();
+  const pool = await getPool();
   const client = await pool.connect();
   try {
     const result = await client.query(text, params);
@@ -38,7 +39,7 @@ export async function queryOne<T = any>(text: string, params?: any[]): Promise<T
 export async function transaction<T>(
   callback: (client: PoolClient) => Promise<T>
 ): Promise<T> {
-  const pool = getPool();
+  const pool = await getPool();
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

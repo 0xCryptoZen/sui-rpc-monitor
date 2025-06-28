@@ -7,9 +7,6 @@ const nextConfig = {
   // Uncomment the line below for static export
   // output: 'export',
   
-  // Force Node.js runtime for all API routes
-  runtime: 'nodejs',
-  
   // Optimization for faster builds and offline support
   swcMinify: false,
   compiler: {
@@ -17,8 +14,7 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: false,
-    // Disable edge runtime globally
-    runtime: 'nodejs',
+    serverComponentsExternalPackages: ['pg', 'bcryptjs', 'jose'],
   },
   // Disable external network calls during build
   typescript: {
@@ -30,12 +26,13 @@ const nextConfig = {
   // Disable font optimization to prevent network calls
   optimizeFonts: false,
   // Webpack configuration to handle build issues
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     // Disable minification completely to avoid build errors
     config.optimization.minimize = false;
     
-    // Only apply fallbacks for client-side bundles
+    // Handle Node.js modules for different environments
     if (!isServer) {
+      // Client-side: exclude Node.js modules
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -49,27 +46,36 @@ const nextConfig = {
         buffer: false,
         child_process: false,
         worker_threads: false,
+        'pg-native': false,
+        'pg': false,
+        'jose': false,
       };
+    } else {
+      // Server-side: make modules external but not tailwindcss
+      config.externals = config.externals || [];
+      config.externals.push({
+        'pg': 'commonjs pg',
+        'jose': 'commonjs jose',
+        'pg-native': 'commonjs pg-native'
+      });
     }
     
-    // Exclude problematic modules from client-side bundling
+    // Always allow tailwindcss to be bundled
+    if (Array.isArray(config.externals)) {
+      config.externals = config.externals.filter(external => 
+        typeof external !== 'string' || !external.includes('tailwindcss')
+      );
+    }
+    
+    // Exclude problematic modules
     config.resolve.alias = {
       ...config.resolve.alias,
       'pg-native': false,
     };
     
-    // Ignore Node.js modules in client-side builds
-    config.externals = config.externals || [];
-    if (!isServer) {
-      config.externals.push({
-        'pg': 'pg',
-        'bcryptjs': 'bcryptjs',
-        'jose': 'jose',
-      });
-    }
-    
     return config;
   },
+  
 }
 
 module.exports = nextConfig

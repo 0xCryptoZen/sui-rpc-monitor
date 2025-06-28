@@ -122,7 +122,7 @@ export class SuiNodeService {
       // Then delete the node
       const result = await client.query('DELETE FROM sui_nodes WHERE id = $1', [id]);
       
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     });
   }
 
