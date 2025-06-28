@@ -23,6 +23,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  // Disable font optimization to prevent network calls
+  optimizeFonts: false,
+  // Webpack configuration to handle build issues
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.optimization.minimize = false;
+    }
+    return config;
+  },
 }
 
 module.exports = nextConfig
