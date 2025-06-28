@@ -1,10 +1,7 @@
 import { NextRequest } from 'next/server';
 import { SuiRPCClient } from '@/app/lib/rpc-client';
-import { getRPCNodes, getMonitoringConfig, validateMonitoringConfig } from '@/app/lib/config';
+import { getRPCNodesStatic, getMonitoringConfig, validateMonitoringConfig } from '@/app/lib/config-simple';
 import { MonitoringResult, RPCNode, NodeMetrics } from '@/app/types';
-import { SuiNodeService } from '@/app/lib/sui-nodes';
-
-export const runtime = 'edge';
 
 // Helper function to calculate node score
 function calculateNodeScore(metrics: NodeMetrics): number {
@@ -40,7 +37,7 @@ function rankNodes(results: MonitoringResult[]): MonitoringResult[] {
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
   const config = validateMonitoringConfig(getMonitoringConfig());
-  const nodes = await getRPCNodes();
+  const nodes = getRPCNodesStatic();
   
   let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -53,13 +50,6 @@ export async function GET(request: NextRequest) {
         try {
           const promises = nodes.map(async (node): Promise<MonitoringResult> => {
             const metrics = await rpcClient.testNode(node.id, node.url);
-            
-            // Store metrics in database (non-blocking)
-            try {
-              await SuiNodeService.storeMetrics(node.id, metrics);
-            } catch (dbError) {
-              console.warn('Failed to store metrics for node', node.id, dbError);
-            }
             
             return {
               node,

@@ -14,7 +14,15 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: false,
-    fontLoaders: [],
+    // Enable Tailwind CSS v4 support
+    turbo: {
+      rules: {
+        '*.css': {
+          loaders: ['css-loader'],
+          as: '*.css',
+        },
+      },
+    },
   },
   // Disable external network calls during build
   typescript: {
@@ -27,9 +35,23 @@ const nextConfig = {
   optimizeFonts: false,
   // Webpack configuration to handle build issues
   webpack: (config, { isServer }) => {
+    // Disable minification completely
+    config.optimization.minimize = false;
+    
+    // Handle Node.js modules for client-side
     if (!isServer) {
-      config.optimization.minimize = false;
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        stream: false,
+        crypto: false,
+        os: false,
+        net: false,
+        tls: false,
+      };
     }
+    
     return config;
   },
 }

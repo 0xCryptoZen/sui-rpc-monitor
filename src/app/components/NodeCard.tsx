@@ -30,11 +30,11 @@ export function NodeCard({ result, isBest }: NodeCardProps) {
   };
 
   return (
-    <div className={`relative rounded-lg border-2 p-6 transition-all ${getStatusColor()}`}>
+    <div className={`relative rounded-lg border-2 p-6 transition-all duration-300 hover:shadow-lg ${getStatusColor()}`}>
       {isBest && <BestNodeBadge />}
       
       <div className="mb-4">
-        <h3 className="text-lg font-semibold">{node.name}</h3>
+        <h3 className="text-lg font-semibold text-sui-dark dark:text-white">{node.name}</h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">{node.provider}</p>
         <p className="text-xs text-gray-500 dark:text-gray-500">{node.region}</p>
       </div>

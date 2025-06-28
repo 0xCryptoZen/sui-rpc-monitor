@@ -47,16 +47,26 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto p-6">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Sui RPC Monitor
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Real-time monitoring of Sui blockchain RPC nodes
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-sui-dark dark:text-white mb-2">
+                Sui RPC Monitor
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Real-time monitoring of Sui blockchain RPC nodes
+              </p>
+            </div>
+            <a
+              href="/admin"
+              className="px-4 py-2 bg-sui-blue text-white rounded-lg hover:bg-sui-teal transition-colors"
+            >
+              Admin Dashboard
+            </a>
+          </div>
           
           <div className="mt-4 flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-status-healthy' : 'bg-status-error'} animate-pulse`}></div>
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-status-healthy' : 'bg-status-error'} animate-pulse-fast`}></div>
               <span className="text-gray-600 dark:text-gray-400">
                 {isConnected ? 'Connected' : 'Disconnected'}
               </span>

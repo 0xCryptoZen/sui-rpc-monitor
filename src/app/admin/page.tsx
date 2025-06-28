@@ -201,13 +201,13 @@ export default function AdminPage() {
           <div className="flex gap-4">
             <a
               href="/"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-sui-blue text-white rounded hover:bg-sui-teal transition-colors"
             >
               View Monitor
             </a>
             <button
               onClick={logout}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 bg-status-error text-white rounded hover:bg-red-700 transition-colors"
             >
               Logout
             </button>
@@ -215,13 +215,13 @@ export default function AdminPage() {
         </header>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-4 bg-red-50 border border-status-error text-status-error rounded-lg">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+          <div className="mb-4 p-4 bg-green-50 border border-status-healthy text-status-healthy rounded-lg">
             {success}
           </div>
         )}
@@ -229,7 +229,7 @@ export default function AdminPage() {
         <div className="mb-6">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-4 py-2 bg-status-healthy text-white rounded hover:bg-green-700 transition-colors"
           >
             {showForm ? 'Cancel' : 'Add New Node'}
           </button>
@@ -305,14 +305,14 @@ export default function AdminPage() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-sui-blue text-white rounded hover:bg-sui-teal transition-colors"
                 >
                   {editingNode ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -372,8 +372,8 @@ export default function AdminPage() {
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         node.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-green-100 text-status-healthy'
+                          : 'bg-red-100 text-status-error'
                       }`}
                     >
                       {node.is_active ? 'Active' : 'Inactive'}
@@ -382,7 +382,7 @@ export default function AdminPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                     <button
                       onClick={() => handleEdit(node)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-sui-blue hover:text-sui-teal transition-colors"
                     >
                       Edit
                     </button>
@@ -390,15 +390,15 @@ export default function AdminPage() {
                       onClick={() => handleToggleActive(node)}
                       className={
                         node.is_active
-                          ? 'text-yellow-600 hover:text-yellow-900'
-                          : 'text-green-600 hover:text-green-900'
+                          ? 'text-status-warning hover:text-yellow-700 transition-colors'
+                          : 'text-status-healthy hover:text-green-700 transition-colors'
                       }
                     >
                       {node.is_active ? 'Deactivate' : 'Activate'}
                     </button>
                     <button
                       onClick={() => handleDelete(node.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-status-error hover:text-red-700 transition-colors"
                     >
                       Delete
                     </button>

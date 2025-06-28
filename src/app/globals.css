@@ -1,6 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Custom color palette */
+  --color-sui-blue: #4DA2FF;
+  --color-sui-teal: #6FBCF0;
+  --color-sui-dark: #0F1419;
+  --color-sui-light: #F7F9FB;
+  
+  --color-status-healthy: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-error: #EF4444;
+  --color-status-unknown: #6B7280;
+  
+  /* Custom animations */
+  --animate-pulse-fast: pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce-soft: bounce-soft 2s ease-in-out infinite;
+  
+  /* Custom spacing */
+  --spacing-18: 4.5rem;
+  --spacing-72: 18rem;
+  
+  /* Custom shadows */
+  --shadow-glow: 0 0 20px rgb(77 162 255 / 0.3);
+  --shadow-status-healthy: 0 0 15px rgb(16 185 129 / 0.4);
+  --shadow-status-error: 0 0 15px rgb(239 68 68 / 0.4);
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-5px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
 
 @layer base {
   :root {

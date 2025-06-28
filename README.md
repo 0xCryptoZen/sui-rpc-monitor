@@ -10,6 +10,7 @@ This is a Sui RPC Node Monitor project - a real-time web-based monitoring tool t
 - ⚙️ **Admin Dashboard** - Web interface for managing RPC nodes
 - 📈 **Historical Metrics** - Store and analyze node performance over time
 - 🌐 **RESTful API** - Complete API for node management
+- 🎨 **Modern UI** - Built with Tailwind CSS v4 and custom design system
 
 ## Authentication
 
