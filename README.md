@@ -20,6 +20,10 @@ bun start
 
 ## Ubuntu Deployment Guide
 
+### For Production Deployment
+
+Use `bun start` with proper build process. For development mode, see the "Development Mode on Server" section below.
+
 ### Prerequisites
 
 1. Ubuntu server (20.04 or later)
@@ -67,8 +71,9 @@ RestartSec=10
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=sui-rpc-monitor
-Environment="NODE_ENV=production"
+Environment="NODE_ENV=development"
 Environment="PORT=3000"
+Environment="NEXT_TELEMETRY_DISABLED=1"
 
 [Install]
 WantedBy=multi-user.target
@@ -127,6 +132,44 @@ If using UFW firewall:
 ```bash
 sudo ufw allow 3000/tcp
 sudo ufw reload
+```
+
+### Development Mode on Server
+
+If you need to run in development mode (NOT recommended for production):
+
+1. **Create development systemd service**
+
+Create `/etc/systemd/system/sui-rpc-monitor-dev.service`:
+
+```ini
+[Unit]
+Description=Sui RPC Monitor Next.js App (Dev Mode)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/rpc-space
+ExecStart=/home/ubuntu/.bun/bin/bun dev
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sui-rpc-monitor-dev
+Environment="NODE_ENV=development"
+Environment="PORT=3000"
+Environment="NEXT_TELEMETRY_DISABLED=1"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+2. **Start development service**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start sui-rpc-monitor-dev
+sudo systemctl status sui-rpc-monitor-dev
 ```
 
 ### Alternative: Using PM2
