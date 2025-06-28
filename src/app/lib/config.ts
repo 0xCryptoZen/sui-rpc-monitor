@@ -1,5 +1,6 @@
 import { RPCNode } from '@/app/types';
 import { DEFAULT_RPC_NODES } from './nodes-config';
+import { SuiNodeService } from './sui-nodes';
 
 export interface MonitoringConfig {
   interval: number;
@@ -66,9 +67,21 @@ function loadCustomRPCNodes(): RPCNode[] {
 
 /**
  * Get RPC nodes configuration
- * Returns custom nodes if USE_CUSTOM_RPC_NODES is true, otherwise returns default nodes
+ * Returns nodes from database, falls back to environment variables or default nodes
  */
-export function getRPCNodes(): RPCNode[] {
+export async function getRPCNodes(): Promise<RPCNode[]> {
+  try {
+    // Try to get nodes from database first
+    const dbNodes = await SuiNodeService.getAllActiveNodes();
+    if (dbNodes.length > 0) {
+      console.log(`Using ${dbNodes.length} nodes from database`);
+      return dbNodes;
+    }
+  } catch (error) {
+    console.warn('Failed to load nodes from database, falling back to env/default:', error);
+  }
+
+  // Fallback to environment variables
   const useCustomNodes = process.env.USE_CUSTOM_RPC_NODES === 'true';
   
   if (useCustomNodes) {
@@ -77,7 +90,28 @@ export function getRPCNodes(): RPCNode[] {
       console.warn('USE_CUSTOM_RPC_NODES is true but no valid custom nodes found. Using default nodes.');
       return DEFAULT_RPC_NODES;
     }
-    console.log(`Using ${customNodes.length} custom RPC nodes`);
+    console.log(`Using ${customNodes.length} custom RPC nodes from environment`);
+    return customNodes;
+  }
+
+  console.log('Using default RPC nodes');
+  return DEFAULT_RPC_NODES;
+}
+
+/**
+ * Synchronous version for backwards compatibility
+ * Only uses environment variables and default nodes
+ */
+export function getRPCNodesSync(): RPCNode[] {
+  const useCustomNodes = process.env.USE_CUSTOM_RPC_NODES === 'true';
+  
+  if (useCustomNodes) {
+    const customNodes = loadCustomRPCNodes();
+    if (customNodes.length === 0) {
+      console.warn('USE_CUSTOM_RPC_NODES is true but no valid custom nodes found. Using default nodes.');
+      return DEFAULT_RPC_NODES;
+    }
+    console.log(`Using ${customNodes.length} custom RPC nodes from environment`);
     return customNodes;
   }
 

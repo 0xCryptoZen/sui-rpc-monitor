@@ -7,18 +7,25 @@
     "build": "bun run next build",
     "start": "bun run next start -p ${PORT:-3000}",
     "lint": "bun run next lint",
-    "typecheck": "bun run tsc --noEmit"
+    "typecheck": "bun run tsc --noEmit",
+    "db:init": "bun run database/init.js",
+    "db:setup": "createdb sui_monitor 2>/dev/null || true && bun run db:init"
   },
   "dependencies": {
     "@mysten/sui.js": "^0.54.1",
+    "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.1",
+    "jose": "^5.2.0",
     "next": "14.1.0",
+    "pg": "^8.11.3",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.5",
+    "@types/pg": "^8.10.9",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.17",
