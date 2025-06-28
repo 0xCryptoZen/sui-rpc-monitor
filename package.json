@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun run next dev",
     "build": "bun run next build",
+    "build:static": "NODE_ENV=production bun run next build",
     "start": "bun run next start -p ${PORT:-3000}",
     "lint": "bun run next lint",
     "typecheck": "bun run tsc --noEmit",

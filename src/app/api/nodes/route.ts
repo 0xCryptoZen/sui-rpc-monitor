@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRPCNodesStatic } from '@/app/lib/config-simple';
+import { SuiNodeService, CreateSuiNodeData, UpdateSuiNodeData } from '@/app/lib/sui-nodes';
+
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const nodes = getRPCNodesStatic();
+    const nodes = await SuiNodeService.getAllNodes();
     return NextResponse.json(nodes, {
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -21,8 +23,41 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { error: 'Database features not available in static build' },
-    { status: 501 }
-  );
+  try {
+    const data: CreateSuiNodeData = await request.json();
+
+    // Validate required fields
+    if (!data.id || !data.name || !data.url || !data.region || !data.provider) {
+      return NextResponse.json(
+        { error: 'Missing required fields: id, name, url, region, provider' },
+        { status: 400 }
+      );
+    }
+
+    // Validate URL format
+    if (!SuiNodeService.validateNodeUrl(data.url)) {
+      return NextResponse.json(
+        { error: 'Invalid URL format' },
+        { status: 400 }
+      );
+    }
+
+    // Check if node ID already exists
+    const exists = await SuiNodeService.nodeExists(data.id);
+    if (exists) {
+      return NextResponse.json(
+        { error: 'Node ID already exists' },
+        { status: 409 }
+      );
+    }
+
+    const node = await SuiNodeService.createNode(data);
+    return NextResponse.json(node, { status: 201 });
+  } catch (error) {
+    console.error('Failed to create node:', error);
+    return NextResponse.json(
+      { error: 'Failed to create node' },
+      { status: 500 }
+    );
+  }
 }

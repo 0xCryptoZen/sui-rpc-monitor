@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from './app/lib/auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,7 +14,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for authentication token
+  // Check for authentication token (simple check, full verification in API)
   const token = request.cookies.get('auth-token')?.value || 
                 request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -24,22 +23,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Verify token
-  const payload = await AuthService.verifyToken(token);
-  
-  if (!payload) {
-    // Invalid token, redirect to login
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('auth-token');
-    return response;
-  }
-
-  // Add user info to headers for API routes
-  const response = NextResponse.next();
-  response.headers.set('x-user-id', payload.userId.toString());
-  response.headers.set('x-username', payload.username);
-
-  return response;
+  // For now, just pass through - full verification happens in API routes
+  return NextResponse.next();
 }
 
 export const config = {

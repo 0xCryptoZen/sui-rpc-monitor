@@ -14,8 +14,8 @@ export class NodeMonitor {
     this.rpcClient = new SuiRPCClient();
   }
 
-  startMonitoring(nodes?: RPCNode[], intervalMs?: number): void {
-    const configuredNodes = nodes || getRPCNodes();
+  async startMonitoring(nodes?: RPCNode[], intervalMs?: number): Promise<void> {
+    const configuredNodes = nodes || await getRPCNodes();
     const configuredInterval = intervalMs || this.config.interval;
     if (this.interval) {
       this.stopMonitoring();

@@ -7,6 +7,9 @@ const nextConfig = {
   // Uncomment the line below for static export
   // output: 'export',
   
+  // Force Node.js runtime for all API routes
+  runtime: 'nodejs',
+  
   // Optimization for faster builds and offline support
   swcMinify: false,
   compiler: {
@@ -14,15 +17,8 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: false,
-    // Enable Tailwind CSS v4 support
-    turbo: {
-      rules: {
-        '*.css': {
-          loaders: ['css-loader'],
-          as: '*.css',
-        },
-      },
-    },
+    // Disable edge runtime globally
+    runtime: 'nodejs',
   },
   // Disable external network calls during build
   typescript: {
@@ -35,10 +31,10 @@ const nextConfig = {
   optimizeFonts: false,
   // Webpack configuration to handle build issues
   webpack: (config, { isServer }) => {
-    // Disable minification completely
+    // Disable minification completely to avoid build errors
     config.optimization.minimize = false;
     
-    // Handle Node.js modules for client-side
+    // Only apply fallbacks for client-side bundles
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -49,7 +45,27 @@ const nextConfig = {
         os: false,
         net: false,
         tls: false,
+        process: false,
+        buffer: false,
+        child_process: false,
+        worker_threads: false,
       };
+    }
+    
+    // Exclude problematic modules from client-side bundling
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'pg-native': false,
+    };
+    
+    // Ignore Node.js modules in client-side builds
+    config.externals = config.externals || [];
+    if (!isServer) {
+      config.externals.push({
+        'pg': 'pg',
+        'bcryptjs': 'bcryptjs',
+        'jose': 'jose',
+      });
     }
     
     return config;

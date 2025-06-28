@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { SuiRPCClient } from '@/app/lib/rpc-client';
-import { getRPCNodesStatic } from '@/app/lib/config-simple';
+import { getRPCNodes } from '@/app/lib/config';
 import { MonitoringResult, RPCNode, NodeMetrics } from '@/app/types';
+
+export const runtime = 'nodejs';
 
 // Helper function to calculate node score
 function calculateNodeScore(metrics: NodeMetrics): number {
@@ -50,7 +52,7 @@ function getBestNode(results: MonitoringResult[]): RPCNode | null {
 
 export async function GET() {
   try {
-    const nodes = getRPCNodesStatic();
+    const nodes = await getRPCNodes();
     const rpcClient = new SuiRPCClient();
     
     // Perform health checks on all nodes

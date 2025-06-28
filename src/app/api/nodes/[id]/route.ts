@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SuiNodeService, UpdateSuiNodeData } from '@/app/lib/sui-nodes';
 
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
