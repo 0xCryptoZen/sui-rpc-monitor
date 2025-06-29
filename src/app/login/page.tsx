@@ -229,29 +229,6 @@ export default function LoginPage() {
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
 
-                <Card 
-                  variant="outlined" 
-                  sx={{ 
-                    borderRadius: 2,
-                    background: isDarkMode 
-                      ? 'rgba(55, 65, 81, 0.5)' 
-                      : 'rgba(243, 244, 246, 0.5)',
-                  }}
-                >
-                  <CardContent sx={{ p: 2 }}>
-                    <Typography variant="body2" color="text.secondary" textAlign="center" gutterBottom>
-                      Default Credentials
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">
-                        <strong>Username:</strong> admin
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Password:</strong> admin123
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
               </Box>
             </CardContent>
           </Paper>
