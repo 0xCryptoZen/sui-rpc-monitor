@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SuiNodeService, UpdateSuiNodeData } from '@/app/lib/sui-nodes';
+import { invalidateNodesCache } from '@/app/lib/cache';
 
 export const runtime = 'nodejs';
 
@@ -51,6 +52,9 @@ export async function PUT(
       );
     }
     
+    // Invalidate cache so monitoring picks up changes
+    invalidateNodesCache();
+    
     return NextResponse.json(node);
   } catch (error) {
     console.error('Failed to update node:', error);
@@ -74,6 +78,9 @@ export async function DELETE(
         { status: 404 }
       );
     }
+    
+    // Invalidate cache so monitoring stops tracking deleted node
+    invalidateNodesCache();
     
     return NextResponse.json({ success: true });
   } catch (error) {

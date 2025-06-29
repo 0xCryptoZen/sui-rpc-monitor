@@ -3,6 +3,7 @@ import { SuiRPCClient } from '@/app/lib/rpc-client';
 import { getRPCNodes, getMonitoringConfig, validateMonitoringConfig } from '@/app/lib/config';
 import { MonitoringResult, RPCNode, NodeMetrics } from '@/app/types';
 import { SuiNodeService } from '@/app/lib/sui-nodes';
+import { isCacheStale } from '@/app/lib/cache';
 
 export const runtime = 'nodejs';
 
@@ -40,9 +41,11 @@ function rankNodes(results: MonitoringResult[]): MonitoringResult[] {
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
   const config = validateMonitoringConfig(getMonitoringConfig());
-  const nodes = await getRPCNodes();
   
   let intervalId: ReturnType<typeof setInterval> | null = null;
+  let isConnected = true;
+  let cachedNodes: RPCNode[] = [];
+  let lastNodesFetch = 0;
 
   const stream = new ReadableStream({
     start(controller) {
@@ -51,6 +54,20 @@ export async function GET(request: NextRequest) {
       // Function to perform health checks and send updates
       const checkAndSend = async () => {
         try {
+          // Check if connection is still alive
+          if (!isConnected) {
+            return;
+          }
+
+          // Get fresh nodes from database if cache is stale or empty
+          let nodes = cachedNodes;
+          if (nodes.length === 0 || isCacheStale(lastNodesFetch, 5000)) {
+            nodes = await getRPCNodes();
+            cachedNodes = nodes;
+            lastNodesFetch = Date.now();
+            console.log(`🔄 Refreshed nodes cache: ${nodes.length} nodes`);
+          }
+          
           const promises = nodes.map(async (node): Promise<MonitoringResult> => {
             const metrics = await rpcClient.testNode(node.id, node.url);
             
@@ -58,7 +75,7 @@ export async function GET(request: NextRequest) {
             try {
               await SuiNodeService.storeMetrics(node.id, metrics);
             } catch (dbError) {
-              console.warn('Failed to store metrics for node', node.id, dbError);
+              console.warn(`Failed to store metrics for node ${node.id}:`, dbError);
             }
             
             return {
@@ -72,27 +89,60 @@ export async function GET(request: NextRequest) {
           const results = await Promise.all(promises);
           const rankedResults = rankNodes(results);
           
-          const data = `data: ${JSON.stringify({ results: rankedResults, timestamp: Date.now() })}\n\n`;
-          controller.enqueue(encoder.encode(data));
+          // Check if controller is still valid before sending
+          if (isConnected) {
+            try {
+              const data = `data: ${JSON.stringify({ results: rankedResults, timestamp: Date.now() })}\n\n`;
+              controller.enqueue(encoder.encode(data));
+            } catch (enqueueError) {
+              console.log('Client disconnected, stopping monitoring');
+              isConnected = false;
+              if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+              }
+            }
+          }
         } catch (error) {
           console.error('Monitoring error:', error);
         }
       };
 
       // Perform initial check
-      checkAndSend();
+      checkAndSend().then(() => {
+        console.log('Initial monitoring check completed');
+      });
 
       // Set up interval for continuous monitoring
       intervalId = setInterval(checkAndSend, config.interval);
 
-      // Clean up on close
-      request.signal.addEventListener('abort', () => {
+      // Clean up on close/abort
+      const cleanup = () => {
+        isConnected = false;
         if (intervalId) {
           clearInterval(intervalId);
+          intervalId = null;
         }
-        controller.close();
-      });
+        try {
+          controller.close();
+        } catch (error) {
+          // Controller might already be closed
+        }
+      };
+
+      request.signal.addEventListener('abort', cleanup);
+      
+      // Additional cleanup for when the request ends
+      request.signal.addEventListener('close', cleanup);
     },
+    
+    cancel() {
+      isConnected = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
   });
 
   return new Response(stream, {

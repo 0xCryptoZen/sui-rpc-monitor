@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SuiNodeService, CreateSuiNodeData, UpdateSuiNodeData } from '@/app/lib/sui-nodes';
+import { invalidateNodesCache } from '@/app/lib/cache';
 
 export const runtime = 'nodejs';
 
@@ -52,6 +53,10 @@ export async function POST(request: NextRequest) {
     }
 
     const node = await SuiNodeService.createNode(data);
+    
+    // Invalidate cache so monitoring picks up new node
+    invalidateNodesCache();
+    
     return NextResponse.json(node, { status: 201 });
   } catch (error) {
     console.error('Failed to create node:', error);

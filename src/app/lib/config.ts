@@ -67,35 +67,34 @@ function loadCustomRPCNodes(): RPCNode[] {
 
 /**
  * Get RPC nodes configuration
- * Returns nodes from database, falls back to environment variables or default nodes
+ * ONLY uses PostgreSQL database - NO automatic default node syncing
  */
 export async function getRPCNodes(): Promise<RPCNode[]> {
   try {
-    // Try to get nodes from database first
+    // Always try to get active nodes from database first
     const dbNodes = await SuiNodeService.getAllActiveNodes();
     if (dbNodes.length > 0) {
-      console.log(`Using ${dbNodes.length} nodes from database`);
+      console.log(`✓ Using ${dbNodes.length} active nodes from PostgreSQL database`);
       return dbNodes;
     }
-  } catch (error) {
-    console.warn('Failed to load nodes from database, falling back to env/default:', error);
-  }
-
-  // Fallback to environment variables
-  const useCustomNodes = process.env.USE_CUSTOM_RPC_NODES === 'true';
-  
-  if (useCustomNodes) {
-    const customNodes = loadCustomRPCNodes();
-    if (customNodes.length === 0) {
-      console.warn('USE_CUSTOM_RPC_NODES is true but no valid custom nodes found. Using default nodes.');
-      return DEFAULT_RPC_NODES;
+    
+    // If no active nodes, check if there are any inactive nodes to activate
+    const allDbNodes = await SuiNodeService.getAllNodes();
+    if (allDbNodes.length > 0) {
+      console.log(`⚠️  Found ${allDbNodes.length} inactive nodes in database`);
+      // Don't auto-activate - let user choose which nodes to activate
+      return [];
     }
-    console.log(`Using ${customNodes.length} custom RPC nodes from environment`);
-    return customNodes;
+    
+    // If database is completely empty, return empty array
+    console.log(`ℹ️  No nodes in database - please add nodes via admin panel`);
+    return [];
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    // Return empty array instead of fallback to prevent auto-adding nodes
+    return [];
   }
-
-  console.log('Using default RPC nodes');
-  return DEFAULT_RPC_NODES;
 }
 
 /**

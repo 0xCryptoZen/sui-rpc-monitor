@@ -139,7 +139,7 @@ export class SuiNodeService {
   // Activate node
   static async activateNode(id: string): Promise<boolean> {
     const result = await query(
-      'UPDATE sui_nodes SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      'UPDATE sui_nodes SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING id',
       [id]
     );
     
@@ -166,23 +166,32 @@ export class SuiNodeService {
     }
   }
 
-  // Store node metrics
+  // Store node metrics with node existence check
   static async storeMetrics(nodeId: string, metrics: NodeMetrics): Promise<void> {
-    await query(
-      `INSERT INTO node_metrics (node_id, timestamp, response_time, is_healthy, error_rate, stability_score, last_error, success_count, error_count)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        nodeId,
-        new Date(metrics.timestamp),
-        metrics.responseTime,
-        metrics.isHealthy,
-        metrics.errorRate,
-        metrics.stabilityScore,
-        metrics.lastError || null,
-        metrics.successCount,
-        metrics.errorCount,
-      ]
-    );
+    try {
+      await query(
+        `INSERT INTO node_metrics (node_id, timestamp, response_time, is_healthy, error_rate, stability_score, last_error, success_count, error_count)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          nodeId,
+          new Date(metrics.timestamp),
+          metrics.responseTime,
+          metrics.isHealthy,
+          metrics.errorRate,
+          metrics.stabilityScore,
+          metrics.lastError || null,
+          metrics.successCount,
+          metrics.errorCount,
+        ]
+      );
+    } catch (error: any) {
+      // If foreign key constraint error, node doesn't exist - skip metrics storage
+      if (error.code === '23503') {
+        console.warn(`Node ${nodeId} not found in database, skipping metrics storage`);
+        return;
+      }
+      throw error;
+    }
   }
 
   // Get historical metrics for a node
@@ -215,5 +224,50 @@ export class SuiNodeService {
     await query(
       'DELETE FROM node_metrics WHERE timestamp < NOW() - INTERVAL \'24 hours\''
     );
+  }
+
+  // Sync nodes from configuration to database (only add missing ones, don't restore deleted)
+  static async syncNodesToDatabase(nodes: RPCNode[]): Promise<void> {
+    for (const node of nodes) {
+      try {
+        const exists = await this.nodeExists(node.id);
+        if (!exists) {
+          await this.createNode({
+            id: node.id,
+            name: node.name,
+            url: node.url,
+            region: node.region,
+            provider: node.provider,
+          });
+          console.log(`✓ Created missing node in database: ${node.id}`);
+        }
+      } catch (error) {
+        console.error(`✗ Failed to sync node ${node.id} to database:`, error);
+      }
+    }
+  }
+
+  // Force sync all default nodes (used for initial setup)
+  static async forceInitializeDefaultNodes(nodes: RPCNode[]): Promise<void> {
+    console.log('Force initializing default nodes...');
+    for (const node of nodes) {
+      try {
+        const exists = await this.nodeExists(node.id);
+        if (!exists) {
+          await this.createNode({
+            id: node.id,
+            name: node.name,
+            url: node.url,
+            region: node.region,
+            provider: node.provider,
+          });
+          console.log(`✓ Force created node: ${node.id}`);
+        } else {
+          console.log(`✓ Node already exists: ${node.id}`);
+        }
+      } catch (error) {
+        console.error(`✗ Failed to force create node ${node.id}:`, error);
+      }
+    }
   }
 }

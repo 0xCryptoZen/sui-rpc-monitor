@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
-import './globals.css'
+import { ThemeProvider } from './components/ThemeProvider'
+import '@fontsource/roboto/300.css'
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
 
 export const metadata: Metadata = {
   title: 'Sui RPC Monitor',
@@ -13,7 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans">{children}</body>
+      <body>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

@@ -2,6 +2,7 @@
 
 import { MonitoringResult, RPCNode } from '@/app/types';
 import { NodeCard } from './NodeCard';
+import { Grid, Box, CircularProgress, Typography, Paper } from '@mui/material';
 
 interface StatusGridProps {
   results: MonitoringResult[];
@@ -11,24 +12,40 @@ interface StatusGridProps {
 export function StatusGrid({ results, bestNode }: StatusGridProps) {
   if (results.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sui-blue mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading node status...</p>
-        </div>
-      </div>
+      <Paper 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: 300,
+          borderRadius: 2
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h5" color="text.secondary" gutterBottom>
+            No Active Nodes
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            No RPC nodes are currently being monitored.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Add nodes in the <strong>Admin Panel</strong> to start monitoring.
+          </Typography>
+        </Box>
+      </Paper>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <Grid container spacing={3}>
       {results.map(result => (
-        <NodeCard 
-          key={result.node.id} 
-          result={result} 
-          isBest={result.node.id === bestNode?.id}
-        />
+        <Grid item xs={12} sm={6} lg={4} key={result.node.id}>
+          <NodeCard 
+            result={result} 
+            isBest={result.node.id === bestNode?.id}
+          />
+        </Grid>
       ))}
-    </div>
+    </Grid>
   );
 }
