@@ -4,6 +4,7 @@ import { getRPCNodes } from '@/app/lib/config';
 import { MonitoringResult, RPCNode, NodeMetrics } from '@/app/types';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // Helper function to calculate node score
 function calculateNodeScore(metrics: NodeMetrics): number {

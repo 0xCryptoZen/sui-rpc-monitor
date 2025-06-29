@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SuiNodeService } from '@/app/lib/sui-nodes';
 import { getRPCNodes } from '@/app/lib/config';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Get nodes from different sources

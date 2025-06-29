@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { invalidateNodesCache } from '@/app/lib/cache';
 import { getRPCNodes } from '@/app/lib/config';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Force invalidate cache

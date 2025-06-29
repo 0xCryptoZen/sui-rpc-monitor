@@ -3,6 +3,7 @@ import { SuiNodeService, UpdateSuiNodeData } from '@/app/lib/sui-nodes';
 import { invalidateNodesCache } from '@/app/lib/cache';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,

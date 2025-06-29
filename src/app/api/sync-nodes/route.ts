@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SuiNodeService } from '@/app/lib/sui-nodes';
 import { DEFAULT_RPC_NODES } from '@/app/lib/nodes-config';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Only add default nodes that don't already exist (respects deletions)

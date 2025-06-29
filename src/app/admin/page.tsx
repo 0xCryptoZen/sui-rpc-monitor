@@ -82,11 +82,11 @@ export default function AdminPage() {
   const theme = useTheme();
   const { isDarkMode, toggleTheme } = useCustomTheme();
 
-  useEffect(() => {
-    loadNodes();
+  const showSnackbar = useCallback((message: string, severity: SnackbarState['severity']) => {
+    setSnackbar({ open: true, message, severity });
   }, []);
 
-  const loadNodes = async () => {
+  const loadNodes = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/nodes');
@@ -98,11 +98,11 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showSnackbar]);
 
-  const showSnackbar = (message: string, severity: SnackbarState['severity']) => {
-    setSnackbar({ open: true, message, severity });
-  };
+  useEffect(() => {
+    loadNodes();
+  }, [loadNodes]);
 
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));

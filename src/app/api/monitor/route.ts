@@ -6,6 +6,7 @@ import { SuiNodeService } from '@/app/lib/sui-nodes';
 import { isCacheStale } from '@/app/lib/cache';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // Helper function to calculate node score
 function calculateNodeScore(metrics: NodeMetrics): number {
